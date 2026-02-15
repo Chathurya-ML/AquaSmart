@@ -1,4 +1,4 @@
-## Technologies to be used in the solution:\
+## Technologies to be used in the solution:
 Amazon API Gateway – Secure endpoint for external weather/forecast APIs\
 Amazon EventBridge – Scheduler for periodic data pulls\
 AWS Lambda – Scheduled jobs to fetch weather data every 12 hours\
