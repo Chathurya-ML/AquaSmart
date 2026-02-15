@@ -10,7 +10,7 @@ Amazon Bedrock - For LLM\
 Twilio - WhatsApp / SMS Alerts\
 Streamlit - Frontend\
 FastAPI - Backend\
-Python - Language\
+Python - Language
 
 
 ## 1. Introduction
