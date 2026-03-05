@@ -1,0 +1,240 @@
+# ============================================
+# AquaSmart - Smart Irrigation System
+# .gitignore
+# ============================================
+
+# ============================================
+# Environment & Secrets
+# ============================================
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets/
+credentials/
+
+# ============================================
+# Python
+# ============================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments - CRITICAL: Exclude all venv folders
+venv/
+**/venv/
+env/
+**/env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+**/.venv/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# ============================================
+# Machine Learning Models & Data
+# ============================================
+# Large model files (optional - comment out if you want to commit models)
+# *.pt
+# *.pth
+# *.h5
+# *.pkl
+# *.joblib
+# *.onnx
+
+# Training artifacts
+*.log
+logs/
+checkpoints/
+runs/
+wandb/
+mlruns/
+
+# Large datasets (keep small test data)
+*.csv
+!Code/backend/data/sensor_readings.csv
+*.parquet
+*.feather
+*.hdf5
+*.h5
+
+# Synthetic data
+Code/synthetic_irrigation_data*.csv
+Code/backend/Code/
+
+# ============================================
+# Jupyter Notebooks
+# ============================================
+.ipynb_checkpoints
+*.ipynb
+
+# ============================================
+# IDEs & Editors
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# Operating System
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Docker
+# ============================================
+# Docker volumes
+docker-compose.override.yml
+
+# ============================================
+# Database & Storage
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+data/alerts.log
+data/irrigation_decisions.db
+data/model_results/
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.~*
+
+# ============================================
+# Node.js (if using any JS tools)
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ============================================
+# AWS & Cloud
+# ============================================
+.aws/
+*.pem
+*.ppk
+
+# ============================================
+# Misc
+# ============================================
+.sass-cache/
+*.pid
+*.seed
+*.pid.lock
+.env.test
+.cache/
+
+# ============================================
+# Keep These Important Files
+# ============================================
+# Essential documentation
+!README.md
+!DEPLOYMENT.md
+!DOCKER_GUIDE.md
+!AWS_SETUP.md
+!HACKATHON_DEMO.md
+!START_DEMO.md
+
+# Configuration examples
+!.env.example
+!docker-compose.yml
+
+# Requirements
+!requirements.txt
+!Code/backend/requirements.txt
+!Code/frontend/requirements.txt
+
+# Specs (if you want to keep them)
+!.kiro/specs/*/requirements.md
+!.kiro/specs/*/design.md
+!.kiro/specs/*/tasks.md

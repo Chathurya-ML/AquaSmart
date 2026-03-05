@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+torch
+stable-baselines3
+transformers
+googletrans==4.0.0-rc1
+gtts
+pydantic
+pandas
+pyarrow
+streamlit
+hypothesis
+pytest
+moto
+httpretty
+responses
