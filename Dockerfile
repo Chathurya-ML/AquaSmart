@@ -6,7 +6,6 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements and install
@@ -26,14 +25,9 @@ COPY Code/frontend/ ./frontend/
 # Create data and models directories
 RUN mkdir -p backend/data backend/models
 
-# Create supervisor config to run both services
-RUN mkdir -p /etc/supervisor/conf.d
-
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 # Expose both ports
 EXPOSE 8000 8501
 
-# Run supervisor to manage both services
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Run both services
+CMD ["sh", "-c", "cd /app/backend && uvicorn app:app --host 0.0.0.0 --port $PORT & cd /app/frontend && streamlit run dashboard.py --server.address=0.0.0.0 --server.port=8501 --server.headless=true"]
 
