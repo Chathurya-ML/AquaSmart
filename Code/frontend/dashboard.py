@@ -17,7 +17,9 @@ import pandas as pd
 # Configuration
 # ============================================
 
-API_URL = "http://localhost:8000"
+import os
+
+API_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 # Supported languages
 LANGUAGES = {

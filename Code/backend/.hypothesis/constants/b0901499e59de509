@@ -1,4 +1,0 @@
-# file: C:\Users\91955\OneDrive\Desktop\AquaSmart\Code\backend\lstm_model.py
-# hypothesis_version: 6.151.9
-
-['forecast_rain_6h', 'forecast_temp_6h', 'hour', 'humidity', 'irrigation', 'rain', 'season', 'soil_moisture', 'temperature', 'wind']
