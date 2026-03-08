@@ -35,11 +35,8 @@ COPY weather_ingestion.py .
 # Create data and models directories
 RUN mkdir -p data models
 
-# Copy model files if they exist (Git LFS fallback)
-# If models don't exist, they will be generated at runtime
-#COPY models/ ./models/ 2>/dev/null || true
-RUN mkdir -p ./models
-COPY models/ ./models/ ./
+# Copy model files if they exist
+COPY models/ ./models/ 2>/dev/null || true
 # Expose port
 EXPOSE 8000
 
