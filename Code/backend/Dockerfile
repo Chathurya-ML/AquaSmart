@@ -33,6 +33,9 @@ COPY weather_ingestion.py .
 # Create data and models directories
 RUN mkdir -p data models
 
+# Copy model files
+COPY models/ ./models/
+
 # Expose port
 EXPOSE 8000
 
