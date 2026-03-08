@@ -10,11 +10,15 @@ Requirements: 6.1, 6.3, 10.1, 10.2, 10.3, 12.1, 12.2
 # Load environment variables FIRST before any other imports
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
-# Load .env from project root (two levels up from this file)
-env_path = Path(__file__).parent.parent.parent / '.env'
-load_dotenv(env_path)
+# Note: Railway injects environment variables directly
+# .env is only used for local development
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent.parent.parent / '.env'
+    load_dotenv(env_path)
+except ImportError:
+    pass  # dotenv not available in production
 
 import time
 from datetime import datetime

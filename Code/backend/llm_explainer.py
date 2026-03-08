@@ -20,25 +20,14 @@ import os
 import requests
 import json
 
-# Global variable to store API client
-_groq_api_key = None
-_hf_api_key = None
-
-
 def get_groq_api_key() -> Optional[str]:
-    """Get Groq API key from environment."""
-    global _groq_api_key
-    if _groq_api_key is None:
-        _groq_api_key = os.getenv('GROQ_API_KEY', '')
-    return _groq_api_key if _groq_api_key else None
+    """Get Groq API key from environment variables (Railway or .env)."""
+    return os.getenv('GROQ_API_KEY', '') or None
 
 
 def get_hf_api_key() -> Optional[str]:
-    """Get HuggingFace API key from environment."""
-    global _hf_api_key
-    if _hf_api_key is None:
-        _hf_api_key = os.getenv('HUGGINGFACE_API_KEY', '')
-    return _hf_api_key if _hf_api_key else None
+    """Get HuggingFace API key from environment variables (Railway or .env)."""
+    return os.getenv('HUGGINGFACE_API_KEY', '') or None
 
 
 def create_prompt(forecast: float, irrigation_amount: float,
