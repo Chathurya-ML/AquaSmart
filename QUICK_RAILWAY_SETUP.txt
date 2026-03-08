@@ -1,0 +1,107 @@
+================================================================================
+RAILWAY DEPLOYMENT - QUICK SETUP (5 MINUTES)
+================================================================================
+
+STEP 1: Create Railway Account
+  1. Go to https://railway.app
+  2. Click "Start for Free"
+  3. Sign up with GitHub
+  4. Authorize Railway
+
+STEP 2: Create New Project
+  1. Click "New Project" (top right)
+  2. Select "Deploy from GitHub repo"
+  3. Search for "AquaSmart"
+  4. Click to select
+  5. Click "Deploy Now"
+
+STEP 3: Wait for Build (5 minutes)
+  Railway will:
+  - Build backend image (~2 min)
+  - Build frontend image (~2 min)
+  - Start services (~1 min)
+
+STEP 4: Configure Environment Variables
+  
+  For BACKEND service:
+    1. Click "backend" service
+    2. Go to "Variables" tab
+    3. Add:
+       GROQ_API_KEY=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
+       USE_AWS=false
+       FALLBACK_ENABLED=true
+       APP_ENV=production
+    4. Click "Save"
+  
+  For FRONTEND service:
+    1. Click "frontend" service
+    2. Go to "Variables" tab
+    3. Add:
+       BACKEND_URL=https://aquasmart-backend-production.up.railway.app
+       (Replace with your actual backend URL)
+    4. Click "Save"
+
+STEP 5: Get Your Public URLs
+  1. Click "frontend" service
+  2. Look for "Public URL" section
+  3. Copy the URL
+  
+  THIS IS YOUR HACKATHON SUBMISSION LINK!
+  Example: https://aquasmart-frontend-production.up.railway.app
+
+STEP 6: Test Your Deployment
+  - Open frontend URL in browser
+  - Should see AquaSmart dashboard
+  - Open backend URL/docs for API docs
+  - Open backend URL/health for health check
+
+STEP 7: Submit to Hackathon
+  Copy your frontend URL and paste into submission form
+
+================================================================================
+THAT'S IT! Your app is now live on the internet!
+================================================================================
+
+LOCAL DEMO (Already Running):
+  Frontend: http://localhost:8501
+  Backend:  http://localhost:8000
+  Docs:     http://localhost:8000/docs
+
+CLOUD DEPLOYMENT (After Railway):
+  Frontend: https://your-project-frontend.railway.app
+  Backend:  https://your-project-backend.railway.app
+  Docs:     https://your-project-backend.railway.app/docs
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Build Failed?
+  - Check that models are committed to Git
+  - Verify .env file is configured
+  - Check Docker logs on Railway
+
+Frontend Can't Connect?
+  - Update BACKEND_URL in frontend environment
+  - Ensure backend service is running
+  - Check network connectivity
+
+Service Won't Start?
+  - Click service and check logs
+  - Look for error messages
+  - Restart service if needed
+
+================================================================================
+AUTO-DEPLOYMENT
+================================================================================
+
+Railway automatically deploys when you push to GitHub:
+  1. Make code changes
+  2. git commit -m "Update"
+  3. git push origin main
+  4. Railway auto-builds and deploys
+  5. New version live in 2-5 minutes
+
+================================================================================
+GOOD LUCK WITH YOUR HACKATHON! 🚀🌱
+================================================================================

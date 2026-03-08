@@ -1,0 +1,43 @@
+AquaSmart - Working Backup
+==========================
+
+Created: March 5, 2026 11:32 PM
+Status: WORKING VERSION - Backend and Frontend Running Successfully
+
+This is a clean backup of your working AquaSmart irrigation system.
+
+WHAT'S INCLUDED:
+- All source code (backend, frontend, training)
+- All documentation (README, deployment guides, etc.)
+- Configuration files (.env, docker-compose.yml)
+- Models (LSTM and RL)
+- Sample data (sensor_readings.csv)
+
+WHAT'S EXCLUDED (to save space):
+- Virtual environments (venv folders)
+- Git history (.git folder)
+- Python cache files (__pycache__, .pyc)
+- Test cache (.pytest_cache, .hypothesis)
+
+SYSTEM ARCHITECTURE:
+- LSTM model: Forecasts soil moisture
+- Rule-based FAO-56: Makes irrigation decisions (NOT using RL)
+- LLM (Groq): Generates explanations
+
+TO RESTORE THIS BACKUP:
+1. Copy this folder to your desired location
+2. Recreate virtual environments:
+   - cd Code/backend && python -m venv venv && venv\Scripts\pip install -r requirements.txt
+   - cd Code/frontend && python -m venv venv && venv\Scripts\pip install -r requirements.txt
+3. Update .env file with your API keys if needed
+4. Run backend: Code\backend\venv\Scripts\python.exe Code\backend\app.py
+5. Run frontend: Code\frontend\venv\Scripts\streamlit.exe run Code\frontend\dashboard.py
+
+IMPORTANT NOTES:
+- Backend runs on http://localhost:8000
+- Frontend runs on http://localhost:8501
+- The .env file contains your Groq API key
+- Models are in Code/backend/models/
+- Data is in Code/backend/data/
+
+This backup is independent of git and can be used as a clean starting point.
