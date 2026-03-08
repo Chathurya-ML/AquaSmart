@@ -482,10 +482,11 @@ def get_aws_status() -> Dict[str, Any]:
 
 
 # Initialize AWS clients on module load
-if USE_AWS:
-    print("Initializing AWS integration layer...")
-    for service in ['timestream_write', 's3', 'sns', 'bedrock']:
-        try:
-            _init_aws_client(service)
-        except:
-            pass
+# DISABLED: Causes hanging on import. Clients will initialize lazily when first used.
+# if USE_AWS:
+#     print("Initializing AWS integration layer...")
+#     for service in ['timestream_write', 's3', 'sns', 'bedrock']:
+#         try:
+#             _init_aws_client(service)
+#         except:
+#             pass

@@ -1,4 +1,4 @@
-# Dockerfile for Flask Backend
+# Dockerfile for FastAPI Backend
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -20,10 +20,10 @@ RUN mkdir -p data models
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/health')"
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
 
 # Expose port
-EXPOSE 5000
+EXPOSE 8000
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application with uvicorn
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

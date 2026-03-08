@@ -7,6 +7,15 @@ and system health monitoring.
 Requirements: 6.1, 6.3, 10.1, 10.2, 10.3, 12.1, 12.2
 """
 
+# Load environment variables FIRST before any other imports
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from project root (two levels up from this file)
+env_path = Path(__file__).parent.parent.parent / '.env'
+load_dotenv(env_path)
+
 import time
 from datetime import datetime
 from fastapi import FastAPI, HTTPException
@@ -293,3 +302,12 @@ async def root():
         "docs": "/docs",
         "health": "/health"
     }
+
+
+# ============================================
+# Run Server
+# ============================================
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

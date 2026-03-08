@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./Code/backend
+      dockerfile: Dockerfile
+    container_name: aquasmart-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - USE_AWS=false
+      - FALLBACK_ENABLED=true
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - LSTM_MODEL_PATH=models/soil_forecast_model.pt
+      - RL_MODEL_PATH=models/proactive_irrigation_policy.zip
+      - SENSOR_DATA_PATH=data/sensor_readings.csv
+      - DECISION_DB_PATH=data/irrigation_decisions.db
+    volumes:
+      - ./Code/backend/data:/app/data
+      - ./Code/backend/models:/app/models
+    networks:
+      - aquasmart-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./Code/frontend
+      dockerfile: Dockerfile
+    container_name: aquasmart-frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aquasmart-network
+    restart: unless-stopped
+
+networks:
+  aquasmart-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+  backend-models:
