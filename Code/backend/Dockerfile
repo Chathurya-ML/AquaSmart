@@ -37,8 +37,9 @@ RUN mkdir -p data models
 
 # Copy model files if they exist (Git LFS fallback)
 # If models don't exist, they will be generated at runtime
-COPY models/ ./models/ 2>/dev/null || true
-
+#COPY models/ ./models/ 2>/dev/null || true
+RUN mkdir -p ./models
+COPY models/ ./models/ ./
 # Expose port
 EXPOSE 8000
 
