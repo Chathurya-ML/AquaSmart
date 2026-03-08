@@ -13,6 +13,7 @@
 *.pem
 secrets/
 credentials/
+venv/
 
 # ============================================
 # Python
