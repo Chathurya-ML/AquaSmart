@@ -31,7 +31,8 @@ COPY storage.py .
 COPY synthetic_forecast.py .
 COPY translation_tts.py .
 COPY weather_ingestion.py .
-COPY data/ ./Code/backend/data/
+COPY data/ ./data/
+
 
 # Create data and models directories
 RUN mkdir -p data models

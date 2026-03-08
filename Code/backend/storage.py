@@ -31,7 +31,9 @@ except ImportError:
 
 
 # Default paths for local storage
-SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'Code/backend/data/sensor_readings.csv')
+#SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'Code/backend/data/sensor_readings.csv')
+SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'data/sensor_readings.csv')
+
 DECISION_DB_PATH = os.getenv('DECISION_DB_PATH', 'Code/backend/data/irrigation_decisions.db')
 MODEL_RESULTS_PATH = 'Code/backend/data/model_results'
 
