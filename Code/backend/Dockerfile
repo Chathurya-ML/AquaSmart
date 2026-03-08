@@ -1,10 +1,10 @@
-# Dockerfile for FastAPI Backend
-FROM python:3.10-slim
+# Dockerfile for FastAPI Backend - Optimized for Railway
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (minimal)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
@@ -12,15 +12,30 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy application code only (not data or models)
+COPY app.py .
+COPY alerts.py .
+COPY aws_integration.py .
+COPY error_handling.py .
+COPY llm_explainer.py .
+COPY llm_explainer_improved.py .
+COPY lstm_model.py .
+COPY model_architecture.py .
+COPY model_management.py .
+COPY models_schema.py .
+COPY notifications.py .
+COPY rl_model.py .
+COPY rule_based_irrigation.py .
+COPY storage.py .
+COPY translation_tts.py .
+COPY weather_ingestion.py .
 
-# Create data directories
+# Create data and models directories (will be mounted or created at runtime)
 RUN mkdir -p data models
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Expose port
 EXPOSE 8000
