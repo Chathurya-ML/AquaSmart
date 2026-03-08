@@ -4,6 +4,8 @@ LSTM Forecasting Module for Smart Irrigation System.
 This module provides functions for loading the LSTM model and performing
 soil moisture forecasting based on historical sensor data.
 
+Falls back to synthetic forecasting if LSTM model is not available.
+
 Requirements: 1.1, 10.1
 """
 
@@ -13,10 +15,12 @@ from typing import List, Dict, Any
 
 # Import the model architecture so PyTorch can deserialize it
 from model_architecture import SoilMoistureLSTM
+from synthetic_forecast import forecast_soil_moisture_synthetic
 
 
 # Global variable to store the loaded model
 _lstm_model = None
+_use_synthetic = False  # Flag to track if we're using synthetic forecasting
 
 
 def load_lstm_model(model_path: str = None) -> torch.nn.Module:
@@ -103,11 +107,15 @@ def forecast_soil_moisture(past_sequence: List[Dict[str, Any]]) -> float:
     """
     Forecast soil moisture 6 hours ahead using the LSTM model.
     
+    Falls back to synthetic forecasting if LSTM model is not available.
+    
     This function:
-    1. Extracts 6 features from each record in past_sequence
-    2. Converts the features to a PyTorch tensor
-    3. Performs model inference with torch.no_grad()
-    4. Returns the predicted moisture as a float
+    1. Tries to use LSTM model if loaded
+    2. Falls back to synthetic forecasting if model unavailable
+    3. Extracts 6 features from each record in past_sequence
+    4. Converts the features to a PyTorch tensor
+    5. Performs model inference with torch.no_grad()
+    6. Returns the predicted moisture as a float
     
     Args:
         past_sequence: List of dictionaries with required features
@@ -119,49 +127,57 @@ def forecast_soil_moisture(past_sequence: List[Dict[str, Any]]) -> float:
         Predicted soil moisture percentage (0-100)
     
     Raises:
-        ValueError: If past_sequence is invalid or model not loaded
-        RuntimeError: If model inference fails
+        ValueError: If past_sequence is invalid
+        RuntimeError: If both LSTM and synthetic forecasting fail
     
     Requirements: 1.1, 1.3
     """
-    global _lstm_model
-    
-    # Validate model is loaded
-    if _lstm_model is None:
-        raise ValueError("LSTM model not loaded. Call load_lstm_model() first.")
+    global _lstm_model, _use_synthetic
     
     # Validate input
-    if not past_sequence or len(past_sequence) < 24:
-        raise ValueError(f"past_sequence must contain at least 24 data points, got {len(past_sequence)}")
+    if not past_sequence or len(past_sequence) < 1:
+        raise ValueError(f"past_sequence must contain at least 1 data point, got {len(past_sequence)}")
     
-    try:
-        # Extract features from the sequence
-        features = extract_features(past_sequence)
+    # Try LSTM model first if loaded
+    if _lstm_model is not None and not _use_synthetic:
+        try:
+            # Extract features from the sequence
+            features = extract_features(past_sequence)
+            
+            # Convert to tensor: shape (batch=1, seq_len, features=6)
+            tensor = torch.tensor(features, dtype=torch.float32).unsqueeze(0)
+            
+            # DEBUG: Log input statistics
+            print(f"LSTM Input Debug:")
+            print(f"  Sequence length: {len(past_sequence)}")
+            print(f"  Last 3 soil moisture values: {[f[4] for f in features[-3:]]}")
+            print(f"  Last 3 rainfall values: {[f[3] for f in features[-3:]]}")
+            print(f"  Tensor shape: {tensor.shape}")
+            print(f"  Tensor min/max: {tensor.min():.2f} / {tensor.max():.2f}")
+            
+            # Perform inference without gradient computation
+            with torch.no_grad():
+                prediction = _lstm_model(tensor)
+            
+            # Extract the scalar value and return as float
+            predicted_moisture = float(prediction.item())
+            
+            print(f"  LSTM Prediction: {predicted_moisture:.2f}%")
+            
+            return predicted_moisture
         
-        # Convert to tensor: shape (batch=1, seq_len, features=6)
-        tensor = torch.tensor(features, dtype=torch.float32).unsqueeze(0)
-        
-        # DEBUG: Log input statistics
-        print(f"LSTM Input Debug:")
-        print(f"  Sequence length: {len(past_sequence)}")
-        print(f"  Last 3 soil moisture values: {[f[4] for f in features[-3:]]}")
-        print(f"  Last 3 rainfall values: {[f[3] for f in features[-3:]]}")
-        print(f"  Tensor shape: {tensor.shape}")
-        print(f"  Tensor min/max: {tensor.min():.2f} / {tensor.max():.2f}")
-        
-        # Perform inference without gradient computation
-        with torch.no_grad():
-            prediction = _lstm_model(tensor)
-        
-        # Extract the scalar value and return as float
-        predicted_moisture = float(prediction.item())
-        
-        print(f"  LSTM Prediction: {predicted_moisture:.2f}%")
-        
-        return predicted_moisture
+        except Exception as e:
+            print(f"LSTM inference failed: {str(e)}")
+            print("Falling back to synthetic forecasting...")
+            _use_synthetic = True
     
-    except Exception as e:
-        raise RuntimeError(f"LSTM inference failed: {str(e)}") from e
+    # Use synthetic forecasting (fallback or primary)
+    if _use_synthetic or _lstm_model is None:
+        try:
+            print("Using synthetic soil moisture forecast...")
+            return forecast_soil_moisture_synthetic(past_sequence)
+        except Exception as e:
+            raise RuntimeError(f"Synthetic forecast failed: {str(e)}") from e
 
 
 def get_model():

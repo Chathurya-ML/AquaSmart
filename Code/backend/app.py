@@ -61,12 +61,20 @@ async def lifespan(app: FastAPI):
     
     success, message = load_models_with_validation()
     
-    if not success:
-        print(f"FATAL ERROR: {message}")
-        print("Application cannot start without models.")
-        raise RuntimeError(message)
+    if success:
+        print(f"✓ {message}")
+    else:
+        # LSTM model is optional - we can use synthetic forecasting
+        # RL model is required - if this fails, we cannot continue
+        if "RL model" in message:
+            print(f"FATAL ERROR: {message}")
+            print("Application cannot start without RL model.")
+            raise RuntimeError(message)
+        else:
+            # LSTM failed but RL is OK - continue with synthetic forecasting
+            print(f"⚠ WARNING: {message}")
+            print("Application will use synthetic forecasting")
     
-    print(f"✓ {message}")
     print("=" * 60)
     print("Application ready to serve requests")
     print("=" * 60)
@@ -296,6 +304,38 @@ async def health_check():
     }
 
 
+@app.get("/history")
+async def get_history(limit: int = 50):
+    """
+    Get historical irrigation decisions and LLM explanations.
+    
+    Args:
+        limit: Maximum number of records to return (default: 50)
+    
+    Returns:
+        List of historical decisions with explanations
+    
+    Requirements: 15.1, 15.2
+    """
+    try:
+        from storage import get_decision_history
+        
+        history = get_decision_history(limit=limit)
+        
+        return {
+            "status": "success",
+            "count": len(history),
+            "history": history
+        }
+    
+    except Exception as e:
+        print(f"Error retrieving history: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve decision history"
+        )
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API information."""
@@ -304,7 +344,8 @@ async def root():
         "version": "1.0.0",
         "status": "running",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
+        "history": "/history"
     }
 
 

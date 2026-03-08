@@ -17,6 +17,7 @@ COPY app.py .
 COPY alerts.py .
 COPY aws_integration.py .
 COPY error_handling.py .
+COPY generate_models_runtime.py .
 COPY llm_explainer.py .
 COPY llm_explainer_improved.py .
 COPY lstm_model.py .
@@ -27,14 +28,16 @@ COPY notifications.py .
 COPY rl_model.py .
 COPY rule_based_irrigation.py .
 COPY storage.py .
+COPY synthetic_forecast.py .
 COPY translation_tts.py .
 COPY weather_ingestion.py .
 
 # Create data and models directories
 RUN mkdir -p data models
 
-# Copy model files
-COPY models/ ./models/
+# Copy model files if they exist (Git LFS fallback)
+# If models don't exist, they will be generated at runtime
+COPY models/ ./models/ 2>/dev/null || true
 
 # Expose port
 EXPOSE 8000

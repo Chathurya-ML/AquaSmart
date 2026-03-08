@@ -116,6 +116,16 @@ with st.sidebar:
     st.title("🌱 Smart Irrigation")
     st.markdown("---")
     
+    # Navigation
+    st.subheader("Navigation")
+    page = st.radio(
+        "Select Page",
+        ["Dashboard", "History"],
+        label_visibility="collapsed"
+    )
+    
+    st.markdown("---")
+    
     # Language selection
     st.subheader("Language / भाषा")
     selected_language = st.selectbox(
@@ -143,20 +153,9 @@ with st.sidebar:
     else:
         st.error("✗ API Offline")
         st.info("Start the backend: `uvicorn app:app --reload`")
+        st.stop()
 
-# ============================================
-# Main Dashboard
-# ============================================
-
-st.title("Smart Irrigation System - Prototype")
-st.markdown("ML-powered irrigation decisions with forecasting and alerts")
-
-# Check API health
-if not check_api_health():
-    st.error("⚠️ Backend API is not running. Please start the FastAPI server.")
-    st.code("cd Code/backend && uvicorn app:app --reload", language="bash")
-    st.stop()
-
+# Dashboard page content
 # Fetch data once on page load or when language changes
 if 'data' not in st.session_state or st.session_state.get('last_language') != selected_language:
     with st.spinner("Fetching irrigation data..."):

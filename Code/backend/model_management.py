@@ -95,7 +95,8 @@ def load_models_with_validation() -> Tuple[bool, str]:
     1. Validates model files exist and have correct format
     2. Calculates checksums for integrity validation
     3. Loads both models
-    4. Prevents application startup if models fail to load
+    4. Falls back to synthetic forecasting if LSTM fails
+    5. Prevents application startup only if RL model fails
     
     Returns:
         Tuple of (success: bool, error_message: str)
@@ -105,43 +106,58 @@ def load_models_with_validation() -> Tuple[bool, str]:
     global _models_loaded, _model_checksums, _model_load_times
     
     try:
-        # Validate LSTM model file
-        if not validate_model_file(LSTM_MODEL_PATH, 'lstm'):
-            return False, f"LSTM model validation failed: {LSTM_MODEL_PATH}"
+        # Check if models exist, generate if needed (Railway fallback)
+        from generate_models_runtime import ensure_models_exist
         
-        # Validate RL model file
+        if not ensure_models_exist(LSTM_MODEL_PATH, RL_MODEL_PATH):
+            return False, "Failed to generate models at runtime"
+        
+        # Try to load LSTM model (non-critical - can use synthetic forecast)
+        lstm_loaded = False
+        if validate_model_file(LSTM_MODEL_PATH, 'lstm'):
+            try:
+                print(f"Loading LSTM model from {LSTM_MODEL_PATH}...")
+                start_time = time.time()
+                lstm_model = load_lstm_model(LSTM_MODEL_PATH)
+                lstm_load_time = time.time() - start_time
+                _model_load_times['lstm'] = lstm_load_time
+                print(f"✓ LSTM model loaded successfully in {lstm_load_time:.2f}s")
+                lstm_loaded = True
+                
+                # Calculate checksum
+                lstm_checksum = calculate_checksum(LSTM_MODEL_PATH)
+                _model_checksums['lstm'] = lstm_checksum
+                print(f"  LSTM model checksum: {lstm_checksum[:16]}...")
+            
+            except Exception as e:
+                print(f"⚠ LSTM model loading failed: {str(e)}")
+                print("  Will use synthetic forecasting instead")
+        else:
+            print(f"⚠ LSTM model file invalid: {LSTM_MODEL_PATH}")
+            print("  Will use synthetic forecasting instead")
+        
+        # Validate and load RL model (critical)
         if not validate_model_file(RL_MODEL_PATH, 'rl'):
             return False, f"RL model validation failed: {RL_MODEL_PATH}"
         
-        # Calculate checksums for integrity validation
-        print("Calculating model checksums...")
-        lstm_checksum = calculate_checksum(LSTM_MODEL_PATH)
-        rl_checksum = calculate_checksum(RL_MODEL_PATH)
-        
-        _model_checksums['lstm'] = lstm_checksum
-        _model_checksums['rl'] = rl_checksum
-        
-        print(f"LSTM model checksum: {lstm_checksum[:16]}...")
-        print(f"RL model checksum: {rl_checksum[:16]}...")
-        
-        # Load LSTM model
-        print(f"Loading LSTM model from {LSTM_MODEL_PATH}...")
-        start_time = time.time()
-        lstm_model = load_lstm_model(LSTM_MODEL_PATH)
-        lstm_load_time = time.time() - start_time
-        _model_load_times['lstm'] = lstm_load_time
-        print(f"LSTM model loaded successfully in {lstm_load_time:.2f}s")
-        
-        # Load RL model
         print(f"Loading RL model from {RL_MODEL_PATH}...")
         start_time = time.time()
         rl_model = load_rl_model(RL_MODEL_PATH)
         rl_load_time = time.time() - start_time
         _model_load_times['rl'] = rl_load_time
-        print(f"RL model loaded successfully in {rl_load_time:.2f}s")
+        print(f"✓ RL model loaded successfully in {rl_load_time:.2f}s")
+        
+        # Calculate checksum
+        rl_checksum = calculate_checksum(RL_MODEL_PATH)
+        _model_checksums['rl'] = rl_checksum
+        print(f"  RL model checksum: {rl_checksum[:16]}...")
         
         _models_loaded = True
-        return True, "Models loaded successfully"
+        
+        if lstm_loaded:
+            return True, "All models loaded successfully"
+        else:
+            return True, "RL model loaded. Using synthetic forecasting for LSTM."
     
     except FileNotFoundError as e:
         error_msg = f"Model file not found: {str(e)}"

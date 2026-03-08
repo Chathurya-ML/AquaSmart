@@ -201,6 +201,59 @@ def store_decision(decision_data: Dict[str, Any]) -> bool:
         return False
 
 
+def get_decision_history(limit: int = 50, farmer_id: str = 'default') -> List[Dict[str, Any]]:
+    """
+    Retrieve historical irrigation decisions.
+    
+    Args:
+        limit: Maximum number of records to return
+        farmer_id: Filter by farmer ID (default: 'default')
+    
+    Returns:
+        List of historical decisions with explanations
+    
+    Requirements: 15.1, 15.2
+    """
+    try:
+        init_decision_db()
+        
+        conn = sqlite3.connect(DECISION_DB_PATH)
+        cursor = conn.cursor()
+        
+        # Query decisions ordered by timestamp (newest first)
+        cursor.execute("""
+            SELECT decision_id, farmer_id, timestamp, current_moisture,
+                   forecasted_moisture, irrigation_amount, alerts, explanation
+            FROM irrigation_decisions
+            WHERE farmer_id = ?
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """, (farmer_id, limit))
+        
+        rows = cursor.fetchall()
+        conn.close()
+        
+        # Convert to list of dictionaries
+        history = []
+        for row in rows:
+            history.append({
+                'decision_id': row[0],
+                'farmer_id': row[1],
+                'timestamp': row[2],
+                'current_moisture': row[3],
+                'forecasted_moisture': row[4],
+                'irrigation_amount': row[5],
+                'alerts': json.loads(row[6]) if row[6] else [],
+                'explanation': row[7]
+            })
+        
+        return history
+    
+    except Exception as e:
+        print(f"Failed to retrieve decision history: {str(e)}")
+        return []
+
+
 # ============================================
 # Model Results Logging
 # ============================================
