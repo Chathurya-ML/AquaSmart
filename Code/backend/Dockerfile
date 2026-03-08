@@ -36,7 +36,7 @@ COPY weather_ingestion.py .
 RUN mkdir -p data models
 
 # Copy model files if they exist
-COPY models/ ./models/ 2>/dev/null || true
+#COPY models/ ./models/ 2>/dev/null || true
 # Expose port
 EXPOSE 8000
 
