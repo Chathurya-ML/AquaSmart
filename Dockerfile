@@ -1,6 +1,4 @@
-# Root Dockerfile for Railway - Uses docker-compose
-# Railway will detect this and use docker-compose.yml for orchestration
-
+# Root Dockerfile for Railway - Runs both backend and frontend
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -8,24 +6,34 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY Code/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy backend requirements and install
+COPY Code/backend/requirements.txt ./backend_requirements.txt
+RUN pip install --no-cache-dir -r backend_requirements.txt
+
+# Copy frontend requirements and install
+COPY Code/frontend/requirements.txt ./frontend_requirements.txt
+RUN pip install --no-cache-dir -r frontend_requirements.txt
 
 # Copy backend code
-COPY Code/backend/ .
+COPY Code/backend/ ./backend/
+
+# Copy frontend code
+COPY Code/frontend/ ./frontend/
 
 # Create data and models directories
-RUN mkdir -p data models
+RUN mkdir -p backend/data backend/models
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+# Create supervisor config to run both services
+RUN mkdir -p /etc/supervisor/conf.d
 
-# Expose port
-EXPOSE 8000
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Run the application
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Expose both ports
+EXPOSE 8000 8501
+
+# Run supervisor to manage both services
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+

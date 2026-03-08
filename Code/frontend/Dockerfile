@@ -1,9 +1,9 @@
-# Dockerfile for Streamlit Frontend - Optimized for Railway
+# Dockerfile for Streamlit Frontend - Railway Deployment
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies (minimal)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code only
+# Copy application code
 COPY dashboard.py .
 
 # Create .streamlit config directory
@@ -25,4 +25,4 @@ RUN echo "[server]\nheadless = true\nport = 8501\nenableXsrfProtection = false\n
 EXPOSE 8501
 
 # Run Streamlit
-CMD ["streamlit", "run", "dashboard.py", "--server.address=0.0.0.0", "--server.port=8501", "--logger.level=debug"]
+CMD ["streamlit", "run", "dashboard.py", "--server.address=0.0.0.0", "--server.port=8501"]

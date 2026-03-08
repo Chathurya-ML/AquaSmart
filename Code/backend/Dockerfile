@@ -1,9 +1,9 @@
-# Dockerfile for FastAPI Backend - Optimized for Railway
+# Dockerfile for FastAPI Backend - Railway Deployment
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies (minimal)
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code only (not data or models)
+# Copy application code
 COPY app.py .
 COPY alerts.py .
 COPY aws_integration.py .
@@ -30,15 +30,11 @@ COPY storage.py .
 COPY translation_tts.py .
 COPY weather_ingestion.py .
 
-# Create data and models directories (will be mounted or created at runtime)
+# Create data and models directories
 RUN mkdir -p data models
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
-
-# Expose port
+# Expose port (Railway will set PORT env var)
 EXPOSE 8000
 
-# Run the application with uvicorn
+# Run the application
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
