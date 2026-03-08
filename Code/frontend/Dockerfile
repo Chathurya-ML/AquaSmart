@@ -25,4 +25,4 @@ RUN echo "[server]\nheadless = true\nenableXsrfProtection = false\n[client]\nsho
 EXPOSE 8501
 
 # Run Streamlit on Railway's PORT
-CMD streamlit run dashboard.py --server.address=0.0.0.0 --server.port=${PORT:-8501}
+CMD ["streamlit", "run", "dashboard.py", "--server.address=0.0.0.0", "--server.port=${PORT:-8501}"]
