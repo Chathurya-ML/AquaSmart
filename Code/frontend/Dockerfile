@@ -19,10 +19,10 @@ COPY dashboard.py .
 RUN mkdir -p .streamlit
 
 # Streamlit config for Railway
-RUN echo "[server]\nheadless = true\nport = 8501\nenableXsrfProtection = false\n[client]\nshowErrorDetails = true" > .streamlit/config.toml
+RUN echo "[server]\nheadless = true\nenableXsrfProtection = false\n[client]\nshowErrorDetails = true" > .streamlit/config.toml
 
 # Expose port
 EXPOSE 8501
 
-# Run Streamlit
-CMD ["sh", "-c", "streamlit run dashboard.py --server.address=0.0.0.0 --server.port=$PORT"]
+# Run Streamlit on Railway's PORT
+CMD streamlit run dashboard.py --server.address=0.0.0.0 --server.port=${PORT:-8501}
