@@ -165,10 +165,9 @@ def translate_and_generate_audio(text: str, target_language: str) -> tuple[str, 
     # Skip audio generation if it takes too long (non-blocking)
     audio_base64 = ""
     try:
-        # For now, skip TTS to avoid timeout issues
-        # TTS can be enabled later with async processing
-        # audio_base64 = generate_audio(translated_text, target_language)
-        print("TTS generation skipped (can be enabled with async processing)")
+        # Generate TTS audio
+        audio_base64 = generate_audio(translated_text, target_language)
+        print(f"✓ Audio generated successfully ({len(audio_base64)} bytes)")
     except Exception as e:
         # TTS failed - return empty audio
         print(f"TTS error: {str(e)}. Returning text-only response.")

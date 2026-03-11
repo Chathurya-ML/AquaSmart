@@ -232,12 +232,18 @@ st.markdown("---")
 
 st.header("🤖 Decision Explanation")
 
+
 # Display explanation
+
+def strip_emojis(text):
+    return re.sub(r'[\U0001F300-\U0001FAD6\U0001F900-\U0001F9FF\U0001FA70-\U0001FAFF]', '', text)
+
 st.info(data['llm_explanation'])
 
 # Audio playback
 if data.get('audio_base64'):
     try:
+        clean_text = strip_emojis(data['llm_explanation'])
         audio_bytes = base64.b64decode(data['audio_base64'])
         st.audio(audio_bytes, format='audio/mp3')
     except Exception as e:
