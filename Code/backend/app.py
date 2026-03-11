@@ -110,6 +110,54 @@ app.add_middleware(
 # API Endpoints
 # ============================================
 
+@app.get("/irrigation_decision_auto")
+async def make_irrigation_decision_auto(language: str = 'en'):
+    """
+    Make irrigation decision automatically by loading data from CSV.
+    
+    This endpoint loads the latest sensor data from the working CSV
+    and makes a decision without requiring the frontend to read files.
+    
+    Requirements: 6.1, 6.3, 1.1, 2.1, 3.1, 4.1, 8.1, 15.1, 15.2
+    """
+    try:
+        # Load latest sensor data from working CSV
+        from storage import load_sensor_data
+        
+        sensor_data = load_sensor_data()
+        
+        if len(sensor_data) == 0:
+            raise ValueError("No sensor data available")
+        
+        # Get last 24 rows for past_sequence
+        past_sequence = sensor_data.tail(24).to_dict('records')
+        
+        # Get current reading (most recent)
+        current = sensor_data.iloc[-1]
+        
+        # Create request object
+        request = IrrigationRequest(
+            soil_moisture=float(current['soil_moisture']),
+            temperature=float(current['temperature']),
+            humidity=float(current['humidity']),
+            rain=float(current['forecast_rain_6h']),
+            forecast_temp_6h=float(current['forecast_temp_6h']),
+            forecast_rain_6h=float(current['forecast_rain_6h']),
+            past_sequence=past_sequence,
+            language=language
+        )
+        
+        # Call the main decision endpoint
+        return await make_irrigation_decision(request)
+    
+    except Exception as e:
+        print(f"Error in auto decision: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to make automatic irrigation decision: {str(e)}"
+        )
+
+
 @app.post("/irrigation_decision", response_model=IrrigationResponse)
 async def make_irrigation_decision(request: IrrigationRequest):
     """

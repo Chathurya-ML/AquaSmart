@@ -239,3 +239,6 @@ yarn.lock
 !.kiro/specs/*/requirements.md
 !.kiro/specs/*/design.md
 !.kiro/specs/*/tasks.md
+
+# Docs
+*.md

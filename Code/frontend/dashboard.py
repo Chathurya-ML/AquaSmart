@@ -50,46 +50,30 @@ def fetch_irrigation_data(language='en'):
     """
     Fetch irrigation decision from the API.
     
+    The API automatically loads data from CSV and makes decision.
+    Frontend just needs to provide the language preference.
+    
     Requirements: 11.1, 11.5
     """
     try:
-        # Load sensor data from working CSV
-        try:
-            sensor_data = pd.read_csv('Code/backend/data/working_sensor_data.csv')
-        except FileNotFoundError:
-            # Try alternative paths
-            try:
-                sensor_data = pd.read_csv('../backend/data/working_sensor_data.csv')
-            except FileNotFoundError:
-                sensor_data = pd.read_csv('./data/working_sensor_data.csv')
-        
-        # Get last 24 hours of data for past_sequence (or all available if less than 24 hours)
-        past_sequence = sensor_data.tail(24).to_dict('records')
-        
-        # Get current readings from the most recent data point
-        current = sensor_data.iloc[-1]
-        
-        # Prepare request
-        request_data = {
-            "soil_moisture": float(current['soil_moisture']),
-            "temperature": float(current['temperature']),
-            "humidity": float(current['humidity']),
-            "rain": float(current['forecast_rain_6h']),
-            "forecast_temp_6h": float(current['forecast_temp_6h']),
-            "forecast_rain_6h": float(current['forecast_rain_6h']),
-            "past_sequence": past_sequence,
-            "language": language
-        }
-        
-        # Call API
-        response = requests.post(
-            f"{API_URL}/irrigation_decision",
-            json=request_data,
-            timeout=120  # Increased from 30 to 120 seconds for first LLM load
+        # Call API endpoint that auto-loads CSV data
+        response = requests.get(
+            f"{API_URL}/irrigation_decision_auto",
+            params={"language": language},
+            timeout=120
         )
         
         if response.status_code == 200:
-            return response.json(), current
+            data = response.json()
+            # Return data and a mock current object for display
+            current = {
+                'soil_moisture': data.get('forecasted_moisture', 0),
+                'temperature': 0,
+                'humidity': 0,
+                'forecast_temp_6h': 0,
+                'forecast_rain_6h': 0
+            }
+            return data, current
         else:
             st.error(f"API Error: {response.status_code} - {response.text}")
             return None, None
