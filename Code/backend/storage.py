@@ -306,11 +306,111 @@ def get_decision_history(limit: int = 50, farmer_id: str = 'default') -> List[Di
                 'explanation': row[7]
             })
         
+        # If no history, populate with sample data for demo
+        if len(history) == 0:
+            print("No history found. Populating with sample data for demo...")
+            _populate_sample_history()
+            # Recursively call to get the sample data
+            return get_decision_history(limit, farmer_id)
+        
         return history
     
     except Exception as e:
         print(f"Failed to retrieve decision history: {str(e)}")
         return []
+
+
+def _populate_sample_history():
+    """
+    Populate database with sample irrigation decisions for demo purposes.
+    Only called if database is empty.
+    """
+    try:
+        from datetime import datetime, timedelta
+        
+        init_decision_db()
+        conn = sqlite3.connect(DECISION_DB_PATH)
+        cursor = conn.cursor()
+        
+        # Create 5 sample decisions at 6-hour intervals
+        base_time = datetime.now() - timedelta(hours=24)
+        
+        sample_decisions = [
+            {
+                'decision_id': str(int(base_time.timestamp())),
+                'farmer_id': 'default',
+                'timestamp': base_time.isoformat(),
+                'current_moisture': 28.5,
+                'forecasted_moisture': 26.2,
+                'irrigation_amount': 150.0,
+                'alerts': json.dumps(['Soil moisture below threshold']),
+                'explanation': 'Soil moisture is declining. Irrigation recommended to maintain optimal levels.'
+            },
+            {
+                'decision_id': str(int((base_time + timedelta(hours=6)).timestamp())),
+                'farmer_id': 'default',
+                'timestamp': (base_time + timedelta(hours=6)).isoformat(),
+                'current_moisture': 26.2,
+                'forecasted_moisture': 24.8,
+                'irrigation_amount': 180.0,
+                'alerts': json.dumps(['Critical: Soil moisture critical']),
+                'explanation': 'Soil moisture approaching critical threshold. Immediate irrigation required.'
+            },
+            {
+                'decision_id': str(int((base_time + timedelta(hours=12)).timestamp())),
+                'farmer_id': 'default',
+                'timestamp': (base_time + timedelta(hours=12)).isoformat(),
+                'current_moisture': 32.1,
+                'forecasted_moisture': 30.5,
+                'irrigation_amount': 0.0,
+                'alerts': json.dumps([]),
+                'explanation': 'Soil moisture is adequate. No irrigation needed at this time.'
+            },
+            {
+                'decision_id': str(int((base_time + timedelta(hours=18)).timestamp())),
+                'farmer_id': 'default',
+                'timestamp': (base_time + timedelta(hours=18)).isoformat(),
+                'current_moisture': 30.5,
+                'forecasted_moisture': 28.9,
+                'irrigation_amount': 120.0,
+                'alerts': json.dumps(['Rainfall expected']),
+                'explanation': 'Rainfall expected in 6 hours. Light irrigation to prepare soil.'
+            },
+            {
+                'decision_id': str(int((base_time + timedelta(hours=24)).timestamp())),
+                'farmer_id': 'default',
+                'timestamp': (base_time + timedelta(hours=24)).isoformat(),
+                'current_moisture': 35.2,
+                'forecasted_moisture': 33.8,
+                'irrigation_amount': 0.0,
+                'alerts': json.dumps([]),
+                'explanation': 'Recent rainfall has increased soil moisture. No irrigation needed.'
+            }
+        ]
+        
+        for decision in sample_decisions:
+            cursor.execute("""
+                INSERT INTO irrigation_decisions 
+                (decision_id, farmer_id, timestamp, current_moisture, 
+                 forecasted_moisture, irrigation_amount, alerts, explanation)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                decision['decision_id'],
+                decision['farmer_id'],
+                decision['timestamp'],
+                decision['current_moisture'],
+                decision['forecasted_moisture'],
+                decision['irrigation_amount'],
+                decision['alerts'],
+                decision['explanation']
+            ))
+        
+        conn.commit()
+        conn.close()
+        print(f"✓ Populated database with {len(sample_decisions)} sample decisions")
+        
+    except Exception as e:
+        print(f"Failed to populate sample history: {str(e)}")
 
 
 # ============================================
