@@ -37,10 +37,10 @@ def irrigation_amount(
     
     Returns:
         Irrigation amount in millimeters (mm)
-    
+        
     Example:
         >>> irrigation_amount(0.22, fc=0.30, wp=0.15, root_depth=0.5)
-        40.0  # Need 40mm of water
+        40.0  # Need 40mm of water (= 400,000 liters for 1 hectare)
     """
     # Calculate available water capacity
     available_water = field_capacity - wilting_point
@@ -81,10 +81,11 @@ def irrigation_decision(current_state: Dict[str, Any], forecast: float) -> float
         forecast: Predicted soil moisture percentage from LSTM (0-100)
     
     Returns:
-        Irrigation amount in liters/hour (non-negative float)
+        Irrigation amount in Liters (total water needed, not per hour)
         
     Notes:
-        - Assumes 1mm of irrigation ≈ 1 L/h for typical field application
+        - Calculates total liters needed for 1 hectare field
+        - 1mm of water over 1 hectare = 10,000 liters
         - Rainfall reduces irrigation proportionally
         - Field capacity = 30% volumetric (typical for loam soil)
         - Wilting point = 15% volumetric (typical for loam soil)
@@ -113,18 +114,21 @@ def irrigation_decision(current_state: Dict[str, Any], forecast: float) -> float
     # Subtract rainfall from irrigation need (can't go negative)
     net_irrigation_mm = max(0.0, irrigation_mm - rainfall)
     
-    # Convert mm to L/h (approximate conversion for typical field)
-    # For simplicity: 1mm ≈ 1 L/h
-    irrigation_lh = net_irrigation_mm
+    # Convert mm to Liters (for 1 hectare field)
+    # 1mm of water over 1 hectare = 10,000 liters
+    # For typical field size, we calculate total liters needed
+    # Assuming 1 hectare (10,000 m²) field
+    field_area_m2 = 10000  # 1 hectare
+    irrigation_liters = net_irrigation_mm * field_area_m2 / 1000  # mm to liters
     
     # Log decision for debugging
     if irrigation_mm > 0:
         print(f"Rule-based decision: Forecast={forecast:.1f}%, Need={irrigation_mm:.1f}mm, "
-              f"Rainfall={rainfall:.1f}mm, Net irrigation={irrigation_lh:.1f} L/h")
+              f"Rainfall={rainfall:.1f}mm, Net irrigation={irrigation_liters:.0f} Liters")
     else:
         print(f"Rule-based decision: Forecast={forecast:.1f}% is adequate. No irrigation needed.")
     
-    return irrigation_lh
+    return irrigation_liters
 
 
 def load_model(model_path: str = None):

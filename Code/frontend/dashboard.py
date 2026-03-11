@@ -53,17 +53,17 @@ def fetch_irrigation_data(language='en'):
     Requirements: 11.1, 11.5
     """
     try:
-        # Load sample sensor data
+        # Load sensor data from working CSV
         try:
-            sensor_data = pd.read_csv('Code/backend/data/sensor_readings.csv')
+            sensor_data = pd.read_csv('Code/backend/data/working_sensor_data.csv')
         except FileNotFoundError:
             # Try alternative paths
             try:
-                sensor_data = pd.read_csv('../backend/data/sensor_readings.csv')
+                sensor_data = pd.read_csv('../backend/data/working_sensor_data.csv')
             except FileNotFoundError:
-                sensor_data = pd.read_csv('./data/sensor_readings.csv')
+                sensor_data = pd.read_csv('./data/working_sensor_data.csv')
         
-        # Get last 24 hours of data for past_sequence
+        # Get last 24 hours of data for past_sequence (or all available if less than 24 hours)
         past_sequence = sensor_data.tail(24).to_dict('records')
         
         # Get current readings from the most recent data point
@@ -220,7 +220,7 @@ st.header("💧 Irrigation Recommendation")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.subheader(f"Recommended: {data['irrigation_amount']:.1f} L/h")
+    st.subheader(f"Recommended: {data['irrigation_amount']:.0f} Liters")
     
     # Visual gauge for moisture levels
     st.progress(
@@ -228,7 +228,8 @@ with col1:
         text=f"Current: {current['soil_moisture']:.1f}%"
     )
     
-    st.caption(f"🎯 Target: 40-60% | Current: {current['soil_moisture']:.1f}% | Forecast: {data['forecasted_moisture']:.1f}%")
+    # FAO-56 thresholds
+    st.caption(f"🎯 Field Capacity: 30% | Irrigation Threshold: 24% | Current: {current['soil_moisture']:.1f}% | Forecast: {data['forecasted_moisture']:.1f}%")
 
 with col2:
     # Active alerts

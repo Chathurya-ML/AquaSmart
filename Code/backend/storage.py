@@ -31,8 +31,8 @@ except ImportError:
 
 
 # Default paths for local storage
-#SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'Code/backend/data/sensor_readings.csv')
-SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'data/sensor_readings.csv')
+# Use working CSV for app.py computation and updates
+SENSOR_DATA_PATH = os.getenv('SENSOR_DATA_PATH', 'Code/backend/data/working_sensor_data.csv')
 
 DECISION_DB_PATH = os.getenv('DECISION_DB_PATH', 'Code/backend/data/irrigation_decisions.db')
 MODEL_RESULTS_PATH = 'Code/backend/data/model_results'
@@ -61,9 +61,25 @@ def load_sensor_data(start_time: Optional[datetime] = None,
     try:
         df = pd.read_csv(SENSOR_DATA_PATH)
         
+        # Validate CSV integrity - check for malformed rows
+        expected_columns = [
+            'timestamp', 'season', 'hour', 'temperature', 'humidity',
+            'wind', 'rain', 'irrigation', 'soil_moisture',
+            'forecast_temp_6h', 'forecast_rain_6h'
+        ]
+        
+        missing_cols = [col for col in expected_columns if col not in df.columns]
+        if missing_cols:
+            print(f"Warning: Missing columns in CSV: {missing_cols}")
+        
         # Convert timestamp to datetime if needed
         if 'timestamp' in df.columns:
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+            # Remove rows with invalid timestamps
+            invalid_rows = df[df['timestamp'].isna()].index.tolist()
+            if invalid_rows:
+                print(f"Warning: Removing {len(invalid_rows)} rows with invalid timestamps")
+                df = df.dropna(subset=['timestamp'])
         
         # Filter by time range if specified
         if start_time is not None:
@@ -98,6 +114,47 @@ def append_sensor_data(new_reading: Dict[str, Any]) -> bool:
     Requirements: 7.1, 7.2
     """
     try:
+        # Validate required fields
+        required_fields = [
+            'timestamp', 'season', 'hour', 'temperature', 'humidity',
+            'wind', 'rain', 'irrigation', 'soil_moisture',
+            'forecast_temp_6h', 'forecast_rain_6h'
+        ]
+        
+        missing_fields = [f for f in required_fields if f not in new_reading]
+        if missing_fields:
+            print(f"Warning: Missing fields in new reading: {missing_fields}")
+            # Add default values for missing fields
+            for field in missing_fields:
+                if field == 'season':
+                    new_reading[field] = 'winter'
+                elif field == 'hour':
+                    new_reading[field] = 0
+                else:
+                    new_reading[field] = 0.0
+        
+        # Validate data types and ranges
+        try:
+            # Ensure numeric fields are floats
+            numeric_fields = [
+                'temperature', 'humidity', 'wind', 'rain', 'irrigation',
+                'soil_moisture', 'forecast_temp_6h', 'forecast_rain_6h', 'hour'
+            ]
+            for field in numeric_fields:
+                if field in new_reading:
+                    new_reading[field] = float(new_reading[field])
+            
+            # Validate ranges
+            if new_reading.get('soil_moisture', 0) < 0 or new_reading.get('soil_moisture', 0) > 100:
+                print(f"Warning: Soil moisture {new_reading['soil_moisture']} out of range [0-100]")
+            
+            if new_reading.get('humidity', 0) < 0 or new_reading.get('humidity', 0) > 100:
+                print(f"Warning: Humidity {new_reading['humidity']} out of range [0-100]")
+        
+        except ValueError as e:
+            print(f"Error: Invalid data type in new reading: {str(e)}")
+            return False
+        
         # Load existing data
         df = load_sensor_data()
         
@@ -107,10 +164,10 @@ def append_sensor_data(new_reading: Dict[str, Any]) -> bool:
         # Append to existing data
         df = pd.concat([df, new_row], ignore_index=True)
         
-        # Save back to CSV
-        df.to_csv(SENSOR_DATA_PATH, index=False)
+        # Save back to CSV with proper formatting
+        df.to_csv(SENSOR_DATA_PATH, index=False, quoting=1)  # quoting=1 ensures proper CSV format
         
-        print(f"Sensor data updated: {new_reading.get('timestamp')}")
+        print(f"Sensor data updated: {new_reading.get('timestamp')} | Irrigation: {new_reading.get('irrigation', 0):.2f} L/h")
         return True
     
     except Exception as e:
