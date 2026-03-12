@@ -12,6 +12,7 @@ import requests
 import base64
 from datetime import datetime
 import pandas as pd
+import re
 
 # ============================================
 # Configuration
@@ -25,10 +26,16 @@ API_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 LANGUAGES = {
     'en': 'English',
     'hi': 'Hindi',
-    'es': 'Spanish',
-    'pt': 'Portuguese',
-    'fr': 'French',
-    'de': 'German'
+    'te': 'Telugu',
+    'ta': 'Tamil',
+    'kn': 'Kannada',
+    'ml': 'Malayalam',
+    'bn': 'Bengali',
+    'mr': 'Marathi',
+    'gu': 'Gujarati',
+    'pa': 'Punjabi',
+    'or': 'Odia',
+    'ur': 'Urdu'
 }
 
 # ============================================
